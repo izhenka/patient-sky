@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.UUID;
 
+import static util.FileUtil.readFileToJSONObject;
+
 public class Calender {
     UUID id;
     String name;
@@ -35,7 +37,6 @@ public class Calender {
         JSONObject jsonCalender;
         try {
             jsonCalender = readFileToJSONObject(this.filename);
-            System.out.printf("Hurra! Calender for %s readed!\n", this.name);
         } catch (Exception e) {
             System.out.printf("Calender for %s hasn't been loaded.\n", this.name);
             e.printStackTrace();
@@ -43,12 +44,6 @@ public class Calender {
         }
         loadAppointments(jsonCalender);
         loadTimeslots(jsonCalender);
-    }
-
-    public static JSONObject readFileToJSONObject(String filename) throws Exception {
-        JSONParser parser = new JSONParser();
-        Object obj = parser.parse(new FileReader(filename));
-        return (JSONObject) obj;
     }
 
     void loadAppointments(JSONObject jsonCalender) {

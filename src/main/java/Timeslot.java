@@ -1,4 +1,5 @@
 import java.time.Instant;
+import java.util.UUID;
 
 //TODO: superclasse for Appointment og Timeslot?
 public class Timeslot {
@@ -20,14 +21,19 @@ public class Timeslot {
 
     public Timeslot(String id, String start, String end) {
         this.id = id;
-        //TODO: sjekke timezones og local offset
         this.start = Instant.parse(start + "Z");
         this.end = Instant.parse(end + "Z");
     }
 
+    public Timeslot(Instant start, Instant end) {
+        this.id = UUID.randomUUID().toString();
+        this.start = start;
+        this.end = end;
+    }
+
     @Override
     public String toString() {
-        return "Timeslot{" +
+        return "\nTimeslot{" +
                 "start=" + start +
                 ", end=" + end +
                 '}';
@@ -35,10 +41,27 @@ public class Timeslot {
 
     //antar at slots ikke kan deles opp
     public boolean isBeforeSearchingPeriod(Instant periodStart) {
-        return this.start.compareTo(periodStart) < 0;
+        return start.compareTo(periodStart) < 0;
     }
 
     public boolean isAfterSearchingPeriod(Instant periodEnd) {
-        return this.end.compareTo(periodEnd) > 0;
+        return end.compareTo(periodEnd) > 0;
     }
+
+    public boolean isBeforeTimeslot(Timeslot timeslot) {
+        return end.compareTo(timeslot.getStart()) <= 0;
+    }
+
+    public boolean isAfterTimeslot(Timeslot timeslot) {
+        return start.compareTo(timeslot.getEnd()) >= 0;
+    }
+
+    public Timeslot getIntersection(Timeslot timeslot) {
+        Instant start = timeslot.getStart();
+        Instant end = timeslot.getEnd();
+        Instant commonAvailableStart = this.start.compareTo(start) > 0 ? this.start : start;
+        Instant commonAvailableEnd = this.end.compareTo(end) < 0 ? this.end : end;
+        return new Timeslot(commonAvailableStart, commonAvailableEnd);
+    }
+
 }

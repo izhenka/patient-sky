@@ -10,13 +10,18 @@ public class Calender {
     UUID id;
     String name;
     String filename;
+    ArrayList<Appointment> appointments = new ArrayList<>();
+    ArrayList<Timeslot> timeslots = new ArrayList<>();
+
+
+    public ArrayList<Timeslot> getTimeslots() {
+        return timeslots;
+    }
 
     public ArrayList<Appointment> getAppointments() {
         return appointments;
     }
 
-    ArrayList<Appointment> appointments = new ArrayList<>();
-    ArrayList<Timeslot> timeslots = new ArrayList<>();
 
     public Calender(UUID id, String name) {
         this.id = id;

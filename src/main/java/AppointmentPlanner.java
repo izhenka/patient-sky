@@ -26,70 +26,18 @@ public class AppointmentPlanner {
 
     void findAvailableTime() {
         ArrayList<Calender> calenders = createCalenders();
+        ArrayList<ArrayList<Timeslot>> availableTimeslotsForCalenders = new ArrayList<>();
         for (Calender calender : calenders) {
-
-            ArrayList<Appointment> appointments = calender.getAppointments();
-            appointments.sort(Comparator.comparing(Appointment::getStart));
-
-            ArrayList<Timeslot> timeslots = calender.getTimeslots();
-            timeslots.sort(Comparator.comparing(Timeslot::getStart));
-
-            ArrayList<Timeslot> availableTimeslots = new ArrayList<>();
-            for (Timeslot timeslot : timeslots) {
-                Instant timeslotStart = timeslot.getStart();
-                Instant timeslotEnd = timeslot.getEnd();
-
-                System.out.println("Timeslot:" + timeslotStart + " - " + timeslotEnd);
-
-                boolean isTimeslotBeyondSearchPeriod =
-                        timeslotStart.compareTo(this.periodStart) < 0 ||
-                                timeslotEnd.compareTo(this.periodEnd) > 0;
-                //antar at slots ikke kan deles opp
-                if (isTimeslotBeyondSearchPeriod) {
-                    System.out.println("Timeslot is Beyond searching period");
-                    continue;
-                }
-
-                if (isTimeslotFree(timeslotStart, timeslotEnd, appointments)) {
-                    availableTimeslots.add(timeslot);
-                }
-            }
-            System.out.println("Available timeslots: \n" + availableTimeslots);
-
+            ArrayList<Timeslot> availableTimeslots = calender.getAvailableTimeslots(periodStart, periodEnd);
+            availableTimeslotsForCalenders.add(availableTimeslots);
         }
+        System.out.println(availableTimeslotsForCalenders);
 
+        ArrayList<Timeslot> availableTimeslotsForFirstCalender = availableTimeslotsForCalenders.get(0);
 
     }
 
-    public boolean isTimeslotFree (Instant timeslotStart, Instant timeslotEnd, ArrayList<Appointment> appointments) {
-        //TODO: fjerne appointments som er allerede brukt
-        boolean isTimeslotBusy = false;
-        for (Appointment appointment : appointments) {
-            Instant appointmentStart = appointment.getStart();
-            Instant appointmentEnd = appointment.getEnd();
 
-            System.out.println("Appointment:" + appointmentStart + " - " + appointmentEnd);
-
-            if (appointmentStart.compareTo(timeslotEnd) >= 0) {
-                System.out.println("Ledig: breaker");
-                break;
-            }
-
-            boolean isAppointmentIntersectTimeslot =
-                    appointmentStart.compareTo(timeslotEnd) < 0 &&
-                            appointmentEnd.compareTo(timeslotStart) > 0;
-
-            if (isAppointmentIntersectTimeslot) {
-                isTimeslotBusy = true;
-                System.out.println("Busy: breaker");
-                break;
-            }
-
-            System.out.println("Ledig så langt...");
-
-        }
-        return !isTimeslotBusy;
-    }
 
     public ArrayList<Calender> createCalenders() {
         //TODO: flytte? Feilhåndering hvis id ikke er definert, ikke så viktig

@@ -1,7 +1,9 @@
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static util.DateUtil.parsePeriod;
 
@@ -12,33 +14,40 @@ public class AppointmentPlanner {
     Instant periodStart;
     Instant periodEnd;
 
+
     public AppointmentPlanner(ArrayList<UUID> calendarIds, int duration, String periodToSearch) {
         this.calendarIds = calendarIds;
         this.duration = duration;
         Instant[] period = parsePeriod(periodToSearch);
         this.periodStart = period[0];
         this.periodEnd = period[1];
-        System.out.println("period:" + this.periodStart + " - " + this.periodEnd);
     }
 
 
-    void findAvailableTime() {
+    ArrayList<Timeslot> findAvailableTime() {
         ArrayList<Calender> calenders = createCalenders();
-        //TODO: sjekk på at det er minst 1 calender
+        ArrayList<Timeslot> availableTimeslots = getAvailableTimeslots(calenders);
+        ArrayList<Timeslot> mergedTimeslots = mergeTimeslots(availableTimeslots);
+        return mergedTimeslots
+                .stream()
+                .filter(timeslot -> timeslot.getDuration() >= duration)
+                .collect(Collectors.toCollection(ArrayList::new));
+    }
+
+
+    public ArrayList<Timeslot> getAvailableTimeslots(ArrayList<Calender> calenders) {
         ArrayList<Timeslot> commonAvailableTimeslots = calenders.get(0).getAvailableTimeslots(periodStart, periodEnd);
         for (int i = 1; i < calenders.size(); i++) {
             Calender calender = calenders.get(i);
             ArrayList<Timeslot> availableTimeslots = calender.getAvailableTimeslots(periodStart, periodEnd);
             commonAvailableTimeslots = getCommonAvailableTimeslots(commonAvailableTimeslots, availableTimeslots);
         }
-
-        System.out.println("commonAvailableTimeslots: \n" + commonAvailableTimeslots.size());
-        System.out.println(commonAvailableTimeslots);
+        return commonAvailableTimeslots;
     }
+
 
     public ArrayList<Timeslot> getCommonAvailableTimeslots(ArrayList<Timeslot> availableTimeslots1,
                                                            ArrayList<Timeslot> availableTimeslots2) {
-
         ArrayList<Timeslot> commonAvailableTimeslots = new ArrayList<>();
         for (Timeslot timeslot1 : availableTimeslots1) {
             for (Timeslot timeslot2 : availableTimeslots2) {
@@ -55,6 +64,23 @@ public class AppointmentPlanner {
     }
 
 
+    public ArrayList<Timeslot> mergeTimeslots(ArrayList<Timeslot> timeslots) {
+        ArrayList<Timeslot> mergedTimeslots = new ArrayList<>();
+        Timeslot timeslotToMerge = timeslots.get(0);
+        for (int i = 1; i < timeslots.size(); i++) {
+            Timeslot nextTimeslot = timeslots.get(i);
+            if (timeslotToMerge.isMergeableWithTimeslot(nextTimeslot)) {
+                timeslotToMerge = timeslotToMerge.getMergedTimeslot(nextTimeslot);
+            } else {
+                mergedTimeslots.add(timeslotToMerge);
+                timeslotToMerge = nextTimeslot;
+            }
+        }
+        mergedTimeslots.add(timeslotToMerge);
+        return mergedTimeslots;
+    }
+
+
     public ArrayList<Calender> createCalenders() {
         HashMap<UUID, String> calendarIdToName = new HashMap<>();
         calendarIdToName.put(UUID.fromString("48644c7a-975e-11e5-a090-c8e0eb18c1e9"), "Joanna Hef");
@@ -62,7 +88,7 @@ public class AppointmentPlanner {
         calendarIdToName.put(UUID.fromString("452dccfc-975e-11e5-bfa5-c8e0eb18c1e9"), "Emma Win");
 
         ArrayList<Calender> calenders = new ArrayList<>();
-        for (UUID id : this.calendarIds) {
+        for (UUID id : calendarIds) {
             Calender calender = new Calender(id, calendarIdToName.get(id));
             calenders.add(calender);
             calender.readFromFile();

@@ -1,16 +1,13 @@
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-
-import java.io.FileReader;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.UUID;
-
 import static util.FileUtil.readFileToJSONObject;
 
 public class Calender {
+
     UUID id;
     String name;
     String filename;
@@ -22,6 +19,7 @@ public class Calender {
         return timeslots;
     }
 
+
     public ArrayList<Appointment> getAppointments() {
         return appointments;
     }
@@ -32,6 +30,7 @@ public class Calender {
         this.name = name;
         this.filename = String.format("calendar_data/%s.json", name);
     }
+
 
     public void readFromFile() {
         JSONObject jsonCalender;
@@ -46,6 +45,7 @@ public class Calender {
         loadTimeslots(jsonCalender);
     }
 
+
     void loadAppointments(JSONObject jsonCalender) {
         JSONArray appointments = (JSONArray) jsonCalender.get("appointments");
         for (Object appointment : appointments) {
@@ -53,9 +53,11 @@ public class Calender {
             String id = (String) jsonAppointment.get("id");
             String start = (String) jsonAppointment.get("start");
             String end = (String) jsonAppointment.get("end");
-            this.appointments.add(new Appointment(id, start, end));
+            String patientId = (String) jsonAppointment.get("patient_id");
+            this.appointments.add(new Appointment(id, start, end, patientId));
         }
     }
+
 
     void loadTimeslots(JSONObject jsonCalender) {
         JSONArray timeslots = (JSONArray) jsonCalender.get("timeslots");
@@ -67,6 +69,7 @@ public class Calender {
             this.timeslots.add(new Timeslot(id, start, end));
         }
     }
+
 
     ArrayList<Timeslot> getAvailableTimeslots(Instant periodStart, Instant periodEnd) {
         this.appointments.sort(Comparator.comparing(Appointment::getStart));
@@ -87,16 +90,18 @@ public class Calender {
         return availableTimeslots;
     }
 
+
     public boolean isTimeslotFree(Timeslot timeslot, ArrayList<Appointment> appointments) {
         boolean isTimeslotBusy = false;
         for (Appointment appointment : appointments) {
+            if (appointment.isBeforeTimeslot(timeslot)) {
+                continue;
+            }
             if (appointment.isAfterTimeslot(timeslot)) {
                 break;
             }
-            if (appointment.isIntersectsTimeslot(timeslot)) {
-                isTimeslotBusy = true;
-                break;
-            }
+            isTimeslotBusy = true;
+            break;
         }
         return !isTimeslotBusy;
     }

@@ -1,15 +1,11 @@
+import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
 
-//TODO: superclasse for Appointment og Timeslot?
 public class Timeslot {
-    private final String id;
-    private final Instant start;
-    private final Instant end;
-
-    public String getId() {
-        return id;
-    }
+    UUID id;
+    Instant start;
+    Instant end;
 
     public Instant getStart() {
         return start;
@@ -20,13 +16,13 @@ public class Timeslot {
     }
 
     public Timeslot(String id, String start, String end) {
-        this.id = id;
+        this.id = UUID.fromString(id);
         this.start = Instant.parse(start + "Z");
         this.end = Instant.parse(end + "Z");
     }
 
     public Timeslot(Instant start, Instant end) {
-        this.id = UUID.randomUUID().toString();
+        this.id = UUID.randomUUID();
         this.start = start;
         this.end = end;
     }
@@ -39,7 +35,6 @@ public class Timeslot {
                 '}';
     }
 
-    //antar at slots ikke kan deles opp
     public boolean isBeforeSearchingPeriod(Instant periodStart) {
         return start.compareTo(periodStart) < 0;
     }
@@ -56,6 +51,14 @@ public class Timeslot {
         return start.compareTo(timeslot.getEnd()) >= 0;
     }
 
+    public boolean isMergeableWithTimeslot(Timeslot timeslot) {
+        return end.equals(timeslot.getStart());
+    }
+
+    public Timeslot getMergedTimeslot(Timeslot timeslot) {
+        return new Timeslot(start, timeslot.getEnd());
+    }
+
     public Timeslot getIntersection(Timeslot timeslot) {
         Instant start = timeslot.getStart();
         Instant end = timeslot.getEnd();
@@ -64,4 +67,8 @@ public class Timeslot {
         return new Timeslot(commonAvailableStart, commonAvailableEnd);
     }
 
+    public int getDuration() {
+        Duration duration = Duration.between(start, end);
+        return (int) duration.toMinutes();
+    }
 }

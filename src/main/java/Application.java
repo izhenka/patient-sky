@@ -1,5 +1,4 @@
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.UUID;
 
 public class Application {
@@ -11,7 +10,7 @@ public class Application {
         calendarIds.add(UUID.fromString("452dccfc-975e-11e5-bfa5-c8e0eb18c1e9")); //Emma Win
 
         Integer duration = 60;
-        String periodToSearch = "2019-04-25T11:30:00Z/2019-05-11T15:30:00Z";
+        String periodToSearch = "2019-04-23T06:00:00Z/2019-05-11T15:30:00Z";
 
         ArrayList<Timeslot> availableTimes = findAvailableTime(calendarIds, duration, periodToSearch);
         System.out.println("Available time: " + availableTimes.size() + " slots");

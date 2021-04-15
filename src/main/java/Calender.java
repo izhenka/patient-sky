@@ -15,16 +15,6 @@ public class Calender {
     ArrayList<Timeslot> timeslots = new ArrayList<>();
 
 
-    public ArrayList<Timeslot> getTimeslots() {
-        return timeslots;
-    }
-
-
-    public ArrayList<Appointment> getAppointments() {
-        return appointments;
-    }
-
-
     public Calender(UUID id, String name) {
         this.id = id;
         this.name = name;
@@ -92,7 +82,6 @@ public class Calender {
 
 
     public boolean isTimeslotFree(Timeslot timeslot, ArrayList<Appointment> appointments) {
-        boolean isTimeslotBusy = false;
         for (Appointment appointment : appointments) {
             if (appointment.isBeforeTimeslot(timeslot)) {
                 continue;
@@ -100,11 +89,9 @@ public class Calender {
             if (appointment.isAfterTimeslot(timeslot)) {
                 break;
             }
-            isTimeslotBusy = true;
-            break;
+            return false;
         }
-        return !isTimeslotBusy;
+        return true;
     }
-
 
 }
